@@ -1,5 +1,5 @@
 {
-  "cameras": [
+  "CAMERAS": [
     {
       "id": "cam1",
       "url": "rtsp://user:password@camera-ip:554/stream"

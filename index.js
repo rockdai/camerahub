@@ -18,9 +18,9 @@ function parseRtspConfig() {
       const config = JSON.parse(configData);
 
       // 配置文件可以包含摄像头配置和其他参数
-      if (config.cameras && Array.isArray(config.cameras) && config.cameras.length > 0) {
-        console.log(`从配置文件成功读取 ${config.cameras.length} 个摄像头配置`);
-        return config.cameras;
+      if (config.CAMERAS && Array.isArray(config.CAMERAS) && config.CAMERAS.length > 0) {
+        console.log(`从配置文件成功读取 ${config.CAMERAS.length} 个摄像头配置`);
+        return config.CAMERAS;
       }
     } catch (err) {
       console.error(`读取配置文件失败: ${err.message}`);
@@ -30,10 +30,10 @@ function parseRtspConfig() {
   // 2. 尝试从环境变量 RTSP_CONFIG 解析 JSON 配置
   if (process.env.RTSP_CONFIG) {
     try {
-      const cameras = JSON.parse(process.env.RTSP_CONFIG);
-      if (Array.isArray(cameras) && cameras.length > 0) {
-        console.log(`从 RTSP_CONFIG 环境变量成功读取 ${cameras.length} 个摄像头配置`);
-        return cameras;
+      const cameraConfigs = JSON.parse(process.env.RTSP_CONFIG);
+      if (Array.isArray(cameraConfigs) && cameraConfigs.length > 0) {
+        console.log(`从 RTSP_CONFIG 环境变量成功读取 ${cameraConfigs.length} 个摄像头配置`);
+        return cameraConfigs;
       }
     } catch (err) {
       console.error('解析 RTSP_CONFIG 环境变量失败:', err.message);

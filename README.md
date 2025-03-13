@@ -5,16 +5,15 @@
 ## 功能特点
 
 - 支持多路 RTSP 视频流同时录制
-- 自动分段保存视频文件
-- 自动重试连接，提高稳定性
+- 自动分段保存视频文件，出错自动重试连接
 - 支持 Docker 部署
 
 ## 使用 Docker 运行
 
-### 构建镜像
+### 拉取镜像
 
 ```bash
-docker build -t rtsp .
+docker pull rockdai/rtsp:latest
 ```
 
 ### 运行容器
@@ -27,7 +26,7 @@ docker build -t rtsp .
 
 ```json
 {
-  "cameras": [
+  "CAMERAS": [
     {
       "id": "cam1",
       "url": "rtsp://user:password@camera-ip:554/stream"
@@ -51,7 +50,7 @@ docker run -d \
   -v /path/to/your/videos:/output \
   -v /path/to/your/config.json:/app/config.json \
   --restart unless-stopped \
-  rtsp
+  rockdai/rtsp:latest
 ```
 
 ### 使用环境变量配置
@@ -69,7 +68,7 @@ docker run -d \
   -e SEGMENT_DURATION=600 \
   -e MAX_RETRIES=5 \
   --restart unless-stopped \
-  rtsp
+  rockdai/rtsp:latest
 ```
 
 或者使用 JSON 格式配置多个摄像头：
@@ -80,7 +79,7 @@ docker run -d \
   -v /path/to/your/videos:/output \
   -e RTSP_CONFIG='[{"id":"cam1","url":"rtsp://user:password@camera-ip:554/stream"},{"id":"cam2","url":"rtsp://user:password@camera-ip:554/stream"}]' \
   --restart unless-stopped \
-  rtsp
+  rockdai/rtsp:latest
 ```
 
 ### 查看日志
@@ -103,7 +102,7 @@ docker stop rtsp
 
 ```json
 {
-  "cameras": [
+  "CAMERAS": [
     {
       "id": "cam1",
       "url": "rtsp://user:password@camera-ip:554/stream"
@@ -125,7 +124,7 @@ docker stop rtsp
 
 | 参数 | 说明 | 默认值 |
 |---------|------|-------|
-| cameras | 摄像头配置数组（必需） | - |
+| CAMERAS | 摄像头配置数组（必需） | - |
 | SEGMENT_DURATION | 视频分段时长（秒） | 600 |
 | MAX_RETRIES | 最大重试次数 | 5 |
 | RETRY_INTERVAL | 重试间隔（毫秒） | 5000 |
