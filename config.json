@@ -1,0 +1,17 @@
+{
+  "cameras": [
+    {
+      "id": "cam1",
+      "url": "rtsp://user:password@camera-ip:554/stream"
+    },
+    {
+      "id": "cam2",
+      "url": "rtsp://user:password@camera-ip:554/stream"
+    }
+  ],
+  "SEGMENT_DURATION": 600,
+  "MAX_RETRIES": 5,
+  "RETRY_INTERVAL": 5000,
+  "ERROR_CHECK_INTERVAL": 30000,
+  "STALL_TIMEOUT": 60000
+}

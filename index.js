@@ -6,20 +6,114 @@ const fs = require('fs');
 
 // 输出文件目录
 const OUTPUT_DIR = process.env.OUTPUT_DIR || './output';
-// RTSP 流地址配置
-const CONFIG = [{
-  id: 'cam1',
-  url: 'rtsp://admin:123456@47.98.54.212:8881/h265/2',
-}, {
-  id: 'cam2',
-  url: 'rtsp://admin:123456@47.98.54.212:8882/h265/2',
-}];
+const CONFIG_FILE = process.env.CONFIG_FILE || '/app/config.json';
 
-const MAX_RETRIES = 5;                         // 最大重试次数
-const RETRY_INTERVAL = 5000;                   // 重试间隔（毫秒）
-const SEGMENT_DURATION = 600;                  // 视频片段时长（秒），改为10分钟
-const ERROR_CHECK_INTERVAL = 30000;            // 错误检查间隔（毫秒）
-const STALL_TIMEOUT = 60000;                   // 视频流停滞超时时间（毫秒）
+// 从配置文件或环境变量解析 RTSP 配置
+function parseRtspConfig() {
+  // 1. 首先尝试从配置文件读取
+  if (fs.existsSync(CONFIG_FILE)) {
+    try {
+      console.log(`正在从配置文件 ${CONFIG_FILE} 读取配置...`);
+      const configData = fs.readFileSync(CONFIG_FILE, 'utf8');
+      const config = JSON.parse(configData);
+
+      // 配置文件可以包含摄像头配置和其他参数
+      if (config.cameras && Array.isArray(config.cameras) && config.cameras.length > 0) {
+        console.log(`从配置文件成功读取 ${config.cameras.length} 个摄像头配置`);
+        return config.cameras;
+      }
+    } catch (err) {
+      console.error(`读取配置文件失败: ${err.message}`);
+    }
+  }
+
+  // 2. 尝试从环境变量 RTSP_CONFIG 解析 JSON 配置
+  if (process.env.RTSP_CONFIG) {
+    try {
+      const cameras = JSON.parse(process.env.RTSP_CONFIG);
+      if (Array.isArray(cameras) && cameras.length > 0) {
+        console.log(`从 RTSP_CONFIG 环境变量成功读取 ${cameras.length} 个摄像头配置`);
+        return cameras;
+      }
+    } catch (err) {
+      console.error('解析 RTSP_CONFIG 环境变量失败:', err.message);
+    }
+  }
+
+  // 3. 尝试从单独的环境变量解析配置
+  const configs = [];
+  let i = 1;
+
+  while (true) {
+    const id = process.env[`RTSP_ID_${i}`];
+    const url = process.env[`RTSP_URL_${i}`];
+
+    if (!id || !url) break;
+
+    configs.push({ id, url });
+    i++;
+  }
+
+  if (configs.length > 0) {
+    console.log(`从环境变量成功读取 ${configs.length} 个摄像头配置`);
+    return configs;
+  }
+
+  // 4. 未找到有效配置，报错退出
+  console.error('错误: 未找到有效的摄像头配置');
+  console.error('请通过以下方式之一提供配置:');
+  console.error('1. 创建配置文件 ' + CONFIG_FILE);
+  console.error('2. 设置环境变量 RTSP_CONFIG');
+  console.error('3. 设置环境变量 RTSP_ID_1, RTSP_URL_1 等');
+  process.exit(1);
+}
+
+// 从配置文件或环境变量获取其他配置参数
+function getConfig(key, defaultValue) {
+  // 1. 首先尝试从配置文件读取
+  if (fs.existsSync(CONFIG_FILE)) {
+    try {
+      const configData = fs.readFileSync(CONFIG_FILE, 'utf8');
+      const config = JSON.parse(configData);
+      if (config[key] !== undefined) {
+        return config[key];
+      }
+    } catch (err) {
+      // 配置文件读取失败，忽略错误，继续尝试其他方式
+    }
+  }
+
+  // 2. 尝试从环境变量读取
+  if (process.env[key] !== undefined) {
+    return process.env[key];
+  }
+
+  // 3. 返回默认值
+  return defaultValue;
+}
+
+// RTSP 流地址配置
+const CONFIG = parseRtspConfig();
+
+// 从配置文件或环境变量获取其他配置参数
+const MAX_RETRIES = parseInt(getConfig('MAX_RETRIES', '5'), 10);
+const RETRY_INTERVAL = parseInt(getConfig('RETRY_INTERVAL', '5000'), 10);
+const SEGMENT_DURATION = parseInt(getConfig('SEGMENT_DURATION', '600'), 10);
+const ERROR_CHECK_INTERVAL = parseInt(getConfig('ERROR_CHECK_INTERVAL', '30000'), 10);
+const STALL_TIMEOUT = parseInt(getConfig('STALL_TIMEOUT', '60000'), 10);
+
+// 打印当前配置
+console.log('当前配置:');
+console.log(`- 输出目录: ${OUTPUT_DIR}`);
+console.log(`- 视频分段时长: ${SEGMENT_DURATION}秒`);
+console.log(`- 最大重试次数: ${MAX_RETRIES}`);
+console.log(`- 重试间隔: ${RETRY_INTERVAL}毫秒`);
+console.log(`- 错误检查间隔: ${ERROR_CHECK_INTERVAL}毫秒`);
+console.log(`- 视频流停滞超时: ${STALL_TIMEOUT}毫秒`);
+console.log('- RTSP 配置:');
+CONFIG.forEach(config => {
+  console.log(`  - ${config.id}: ${config.url}`);
+});
 
 // 确保输出目录存在
 if (!fs.existsSync(OUTPUT_DIR)) {

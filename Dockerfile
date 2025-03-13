@@ -20,19 +20,25 @@ COPY package*.json ./
 # 安装依赖
 RUN npm install --production
 
-# 复制源代码
+# 复制源代码和配置文件
 COPY . .
 
 # 设置环境变量
 ENV NODE_ENV=production
 ENV OUTPUT_DIR=/output
+ENV CONFIG_FILE=/app/config.json
+ENV SEGMENT_DURATION=600
+ENV MAX_RETRIES=5
+ENV RETRY_INTERVAL=5000
+ENV ERROR_CHECK_INTERVAL=30000
+ENV STALL_TIMEOUT=60000
 
 # 创建输出目录
 RUN mkdir -p /output && \
     chown -R node:node /output
 
-# 声明输出目录为卷，可以被挂载
-VOLUME ["/output"]
+# 声明配置文件和输出目录为卷，可以被挂载
+VOLUME ["/output", "/app/config.json"]
 
 # 使用非 root 用户运行
 USER node
