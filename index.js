@@ -18,9 +18,9 @@ function parseCameraConfig() {
       const config = JSON.parse(configData);
 
       // 配置文件可以包含摄像头配置和其他参数
-      if (config.CAMERAS && Array.isArray(config.CAMERAS) && config.CAMERAS.length > 0) {
-        console.log(`从配置文件成功读取 ${config.CAMERAS.length} 个摄像头配置`);
-        return config.CAMERAS;
+      if (config.CAMERA_CONFIG && Array.isArray(config.CAMERA_CONFIG) && config.CAMERA_CONFIG.length > 0) {
+        console.log(`从配置文件成功读取 ${config.CAMERA_CONFIG.length} 个摄像头配置`);
+        return config.CAMERA_CONFIG;
       }
     } catch (err) {
       console.error(`读取配置文件失败: ${err.message}`);
@@ -63,7 +63,7 @@ function parseCameraConfig() {
   // 没有找到任何配置，显示错误信息
   console.error('错误: 未找到任何摄像头配置');
   console.error('请通过以下方式之一提供摄像头配置:');
-  console.error('1. 提供配置文件 config.json');
+  console.error('1. 提供配置文件 config.json 中的 CAMERA_CONFIG 字段');
   console.error('2. 设置环境变量 CAMERA_CONFIG');
   console.error('3. 设置环境变量 CAMERA_ID_1, CAMERA_URL_1 等');
   process.exit(1);
