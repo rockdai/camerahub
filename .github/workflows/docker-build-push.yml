@@ -8,8 +8,8 @@ on:
     branches: [ "main" ]
 
 env:
-  # 使用 package.json 中的项目名称作为镜像名称
-  IMAGE_NAME: rtsp
+  # 镜像名称
+  IMAGE_NAME: camerahub
 
 jobs:
   build-and-push:

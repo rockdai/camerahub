@@ -8,8 +8,8 @@ const fs = require('fs');
 const OUTPUT_DIR = process.env.OUTPUT_DIR || './output';
 const CONFIG_FILE = process.env.CONFIG_FILE || '/app/config.json';
 
-// 从配置文件或环境变量解析 RTSP 配置
-function parseRtspConfig() {
+// 从配置文件或环境变量解析摄像头配置
+function parseCameraConfig() {
   // 1. 首先尝试从配置文件读取
   if (fs.existsSync(CONFIG_FILE)) {
     try {
@@ -27,44 +27,45 @@ function parseRtspConfig() {
     }
   }
 
-  // 2. 尝试从环境变量 RTSP_CONFIG 解析 JSON 配置
-  if (process.env.RTSP_CONFIG) {
+  // 2. 尝试从环境变量 CAMERA_CONFIG 解析 JSON 配置
+  if (process.env.CAMERA_CONFIG) {
     try {
-      const cameraConfigs = JSON.parse(process.env.RTSP_CONFIG);
+      const cameraConfigs = JSON.parse(process.env.CAMERA_CONFIG);
       if (Array.isArray(cameraConfigs) && cameraConfigs.length > 0) {
-        console.log(`从 RTSP_CONFIG 环境变量成功读取 ${cameraConfigs.length} 个摄像头配置`);
+        console.log(`从 CAMERA_CONFIG 环境变量成功读取 ${cameraConfigs.length} 个摄像头配置`);
         return cameraConfigs;
       }
     } catch (err) {
-      console.error('解析 RTSP_CONFIG 环境变量失败:', err.message);
+      console.error('解析 CAMERA_CONFIG 环境变量失败:', err.message);
     }
   }
 
-  // 3. 尝试从单独的环境变量解析配置
-  const configs = [];
-  let i = 1;
-
-  while (true) {
-    const id = process.env[`RTSP_ID_${i}`];
-    const url = process.env[`RTSP_URL_${i}`];
-
-    if (!id || !url) break;
-
-    configs.push({ id, url });
-    i++;
+  // 3. 尝试从环境变量 CAMERA_ID_n 和 CAMERA_URL_n 解析配置
+  const cameraConfigs = [];
+  for (let i = 1; i <= 100; i++) {
+    const id = process.env[`CAMERA_ID_${i}`];
+    const url = process.env[`CAMERA_URL_${i}`];
+    if (id && url) {
+      cameraConfigs.push({ id, url });
+    } else if (id || url) {
+      console.warn(`摄像头 ${i} 配置不完整，已忽略`);
+    } else {
+      // 没有更多配置，退出循环
+      break;
+    }
   }
 
-  if (configs.length > 0) {
-    console.log(`从环境变量成功读取 ${configs.length} 个摄像头配置`);
-    return configs;
+  if (cameraConfigs.length > 0) {
+    console.log(`从环境变量成功读取 ${cameraConfigs.length} 个摄像头配置`);
+    return cameraConfigs;
   }
 
-  // 4. 未找到有效配置，报错退出
-  console.error('错误: 未找到有效的摄像头配置');
-  console.error('请通过以下方式之一提供配置:');
-  console.error('1. 创建配置文件 ' + CONFIG_FILE);
-  console.error('2. 设置环境变量 RTSP_CONFIG');
-  console.error('3. 设置环境变量 RTSP_ID_1, RTSP_URL_1 等');
+  // 没有找到任何配置，显示错误信息
+  console.error('错误: 未找到任何摄像头配置');
+  console.error('请通过以下方式之一提供摄像头配置:');
+  console.error('1. 提供配置文件 config.json');
+  console.error('2. 设置环境变量 CAMERA_CONFIG');
+  console.error('3. 设置环境变量 CAMERA_ID_1, CAMERA_URL_1 等');
   process.exit(1);
 }
 
@@ -92,8 +93,8 @@ function getConfig(key, defaultValue) {
   return defaultValue;
 }
 
-// RTSP 流地址配置
-const CONFIG = parseRtspConfig();
+// 摄像头流地址配置
+const CONFIG = parseCameraConfig();
 
 // 从配置文件或环境变量获取其他配置参数
 const MAX_RETRIES = parseInt(getConfig('MAX_RETRIES', '5'), 10);
@@ -120,7 +121,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-class RTSPProcessor {
+class CameraProcessor {
   constructor(config) {
     this.config = config;
     this.ffmpegProcess = null;
@@ -252,15 +253,14 @@ class RTSPProcessor {
   }
 }
 
-// 管理所有摄像头进程
-class RTSPManager {
+class CameraManager {
   constructor() {
     this.processors = new Map();
   }
 
   start() {
     for (const config of CONFIG) {
-      const processor = new RTSPProcessor(config);
+      const processor = new CameraProcessor(config);
       this.processors.set(config.id, processor);
       processor.start();
     }
@@ -275,7 +275,7 @@ class RTSPManager {
 }
 
 // 创建并启动管理器
-const manager = new RTSPManager();
+const manager = new CameraManager();
 manager.start();
 
 // 程序退出时，确保所有ffmpeg子进程也退出

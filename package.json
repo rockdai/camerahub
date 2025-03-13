@@ -1,5 +1,5 @@
 {
-  "name": "rtsp",
+  "name": "camerahub",
   "version": "1.0.0",
   "description": "RTSP stream recorder using ffmpeg",
   "main": "index.js",

@@ -1,4 +1,4 @@
-# RTSP 视频流录制工具
+# CameraHub 视频流录制工具
 
 基于 ffmpeg 的 RTSP 视频流录制工具，支持同时录制多路 RTSP 视频流。
 
@@ -13,7 +13,7 @@
 ### 拉取镜像
 
 ```bash
-docker pull rockdai/rtsp:latest
+docker pull rockdai/camerahub:latest
 ```
 
 ### 运行容器
@@ -46,11 +46,11 @@ docker pull rockdai/rtsp:latest
 
 ```bash
 docker run -d \
-  --name rtsp \
+  --name camerahub \
   -v /path/to/your/videos:/output \
   -v /path/to/your/config.json:/app/config.json \
   --restart unless-stopped \
-  rockdai/rtsp:latest
+  rockdai/camerahub:latest
 ```
 
 ### 使用环境变量配置
@@ -59,39 +59,41 @@ docker run -d \
 
 ```bash
 docker run -d \
-  --name rtsp \
+  --name camerahub \
   -v /path/to/your/videos:/output \
-  -e RTSP_ID_1=cam1 \
-  -e RTSP_URL_1=rtsp://user:password@camera-ip:554/stream \
-  -e RTSP_ID_2=cam2 \
-  -e RTSP_URL_2=rtsp://user:password@camera-ip:554/stream \
+  -e CAMERA_ID_1=cam1 \
+  -e CAMERA_URL_1=rtsp://user:password@camera-ip:554/stream \
+  -e CAMERA_ID_2=cam2 \
+  -e CAMERA_URL_2=rtsp://user:password@camera-ip:554/stream \
   -e SEGMENT_DURATION=600 \
   -e MAX_RETRIES=5 \
   --restart unless-stopped \
-  rockdai/rtsp:latest
+  rockdai/camerahub:latest
 ```
 
-或者使用 JSON 格式配置多个摄像头：
+### 使用 JSON 格式环境变量配置
+
+如果摄像头较多，可以使用 JSON 格式的环境变量：
 
 ```bash
 docker run -d \
-  --name rtsp \
+  --name camerahub \
   -v /path/to/your/videos:/output \
-  -e RTSP_CONFIG='[{"id":"cam1","url":"rtsp://user:password@camera-ip:554/stream"},{"id":"cam2","url":"rtsp://user:password@camera-ip:554/stream"}]' \
+  -e CAMERA_CONFIG='[{"id":"cam1","url":"rtsp://user:password@camera-ip:554/stream"},{"id":"cam2","url":"rtsp://user:password@camera-ip:554/stream"}]' \
   --restart unless-stopped \
-  rockdai/rtsp:latest
+  rockdai/camerahub:latest
 ```
 
 ### 查看日志
 
 ```bash
-docker logs -f rtsp
+docker logs -f camerahub
 ```
 
 ### 停止容器
 
 ```bash
-docker stop rtsp
+docker stop camerahub
 ```
 
 ## 配置选项
@@ -137,9 +139,9 @@ docker stop rtsp
 |---------|------|-------|
 | CONFIG_FILE | 配置文件路径 | /app/config.json |
 | OUTPUT_DIR | 输出目录路径 | /output |
-| RTSP_CONFIG | JSON 格式的 RTSP 配置数组 | - |
-| RTSP_ID_n | 第 n 个摄像头的 ID | - |
-| RTSP_URL_n | 第 n 个摄像头的 URL | - |
+| CAMERA_CONFIG | JSON 格式的摄像头配置数组 | - |
+| CAMERA_ID_n | 第 n 个摄像头的 ID | - |
+| CAMERA_URL_n | 第 n 个摄像头的 URL | - |
 | SEGMENT_DURATION | 视频分段时长（秒） | 600 |
 | MAX_RETRIES | 最大重试次数 | 5 |
 | RETRY_INTERVAL | 重试间隔（毫秒） | 5000 |
