@@ -9,8 +9,7 @@
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "nyc": "^15.1.0"
+    "jest": "^29.7.0"
   },
   "engines": {
     "node": ">=18.0.0"
