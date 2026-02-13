@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest",
-    "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov"
+    "test": "jest --runInBand",
+    "test:coverage": "jest --runInBand --coverage --coverageReporters=text --coverageReporters=lcov"
   },
   "devDependencies": {
     "jest": "^29.7.0"
