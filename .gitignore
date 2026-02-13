@@ -137,3 +137,6 @@ dist
 
 .DS_Store
 output/
+
+# lockfiles
+package-lock.json
